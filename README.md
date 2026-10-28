@@ -4,7 +4,7 @@
 
 # CineMáx
 
-Plantilla base para iniciar proyectos con **Laravel 13**, lista para desarrollo local o con Docker.
+CineMáx es un proyecto con fines educativos que busca experimentar Laravel y Blade como un stack de desarrollo de aplicaciones web inspirado en un sitio web para cines.
 
 ## Stack
 
@@ -172,6 +172,164 @@ La aplicación queda disponible en <http://localhost:8000>.
 ### Development Kit Container (opcional)
 
 El `Justfile` incluye `just dkc`, que abre una shell interactiva en la imagen `ghcr.io/leoborai/dkc:latest` con el proyecto montado en `/app`.
+
+## Entidades
+
+El siguiente esquema representa las entidades usadas en este proyecto.
+
+```mermaid
+erDiagram
+    users ||--o{ sessions : "has"
+    users ||--o{ purchases : "makes"
+    rooms ||--o{ seats : "has"
+    rooms ||--o{ screenings : "hosts"
+    movies ||--o{ screenings : "is shown in"
+    purchases ||--o{ payments : "paid by"
+    purchases ||--o{ tickets : "contains"
+    screenings ||--o{ tickets : "admits"
+    seats ||--o{ tickets : "reserved by"
+
+    users {
+        bigint id PK
+        varchar(255) name
+        varchar(255) email UK
+        timestamp email_verified_at "nullable"
+        varchar(255) password
+        varchar(20) role "customer, admin (default customer); indexed"
+        varchar(100) remember_token "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    password_reset_tokens {
+        varchar(255) email PK
+        varchar(255) token
+        timestamp created_at "nullable"
+    }
+
+    sessions {
+        varchar(255) id PK
+        bigint user_id FK "nullable; indexed"
+        varchar(45) ip_address "nullable"
+        text user_agent "nullable"
+        longtext payload
+        int last_activity "indexed"
+    }
+
+    cache {
+        varchar(255) key PK
+        mediumtext value
+        bigint expiration "indexed"
+    }
+
+    cache_locks {
+        varchar(255) key PK
+        varchar(255) owner
+        bigint expiration "indexed"
+    }
+
+    jobs {
+        bigint id PK
+        varchar(255) queue "indexed"
+        longtext payload
+        smallint attempts
+        int reserved_at "nullable"
+        int available_at
+        int created_at
+    }
+
+    job_batches {
+        varchar(255) id PK
+        varchar(255) name
+        int total_jobs
+        int pending_jobs
+        int failed_jobs
+        longtext failed_job_ids
+        mediumtext options "nullable"
+        int cancelled_at "nullable"
+        int created_at
+        int finished_at "nullable"
+    }
+
+    failed_jobs {
+        bigint id PK
+        varchar(255) uuid UK
+        varchar(255) connection
+        varchar(255) queue
+        longtext payload
+        longtext exception
+        timestamp failed_at
+    }
+
+    movies {
+        bigint id PK
+        varchar(200) title "indexed"
+        text description
+        smallint duration_minutes
+        varchar(100) genre "nullable"
+        varchar(500) poster_url "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    rooms {
+        bigint id PK
+        varchar(50) name UK
+        tinyint row_count
+        tinyint seats_per_row
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    seats {
+        bigint id PK
+        bigint room_id FK "indexed; UNIQUE with row_label, seat_number"
+        varchar(5) row_label
+        tinyint seat_number
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    screenings {
+        bigint id PK
+        bigint movie_id FK "indexed"
+        bigint room_id FK "indexed"
+        datetime starts_at "indexed"
+        decimal price "decimal(8,2)"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    purchases {
+        bigint id PK
+        bigint user_id FK "indexed"
+        varchar(20) status "pending, paid, cancelled; indexed"
+        decimal total_amount "decimal(8,2)"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    payments {
+        bigint id PK
+        bigint purchase_id FK "indexed"
+        varchar(100) provider_reference UK
+        decimal amount "decimal(8,2)"
+        timestamp paid_at "nullable"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+
+    tickets {
+        bigint id PK
+        bigint purchase_id FK "indexed"
+        bigint screening_id FK "indexed; UNIQUE with seat_id"
+        bigint seat_id FK "indexed"
+        varchar(20) status "active, used; indexed"
+        decimal price "decimal(8,2)"
+        timestamp created_at "nullable"
+        timestamp updated_at "nullable"
+    }
+```
 
 ## Licencia
 
