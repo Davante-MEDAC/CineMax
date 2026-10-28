@@ -1,0 +1,145 @@
+users
+-----
+id PK bigint
+name varchar(255)
+email varchar(255) UNIQUE
+email_verified_at timestamp NULL
+password varchar(255)
+role varchar(20) INDEX
+remember_token varchar(100) NULL
+created_at timestamp NULL
+updated_at timestamp NULL
+# role: customer, admin (default: customer)
+
+password_reset_tokens
+---------------------
+email PK varchar(255)
+token varchar(255)
+created_at timestamp NULL
+
+sessions
+--------
+id PK varchar(255)
+user_id bigint NULL INDEX FK >- users.id
+ip_address varchar(45) NULL
+user_agent text NULL
+payload longtext
+last_activity int INDEX
+
+cache
+-----
+key PK varchar(255)
+value mediumtext
+expiration bigint INDEX
+
+cache_locks
+-----------
+key PK varchar(255)
+owner varchar(255)
+expiration bigint INDEX
+
+jobs
+----
+id PK bigint
+queue varchar(255) INDEX
+payload longtext
+attempts smallint
+reserved_at int NULL
+available_at int
+created_at int
+
+job_batches
+-----------
+id PK varchar(255)
+name varchar(255)
+total_jobs int
+pending_jobs int
+failed_jobs int
+failed_job_ids longtext
+options mediumtext NULL
+cancelled_at int NULL
+created_at int
+finished_at int NULL
+
+failed_jobs
+-----------
+id PK bigint
+uuid varchar(255) UNIQUE
+connection varchar(255)
+queue varchar(255)
+payload longtext
+exception longtext
+failed_at timestamp
+
+movies
+------
+id PK bigint
+title varchar(200) INDEX
+description text
+duration_minutes smallint unsigned
+genre varchar(100) NULL
+poster_url varchar(500) NULL
+created_at timestamp NULL
+updated_at timestamp NULL
+
+rooms
+-----
+id PK bigint
+name varchar(50) UNIQUE
+row_count tinyint unsigned
+seats_per_row tinyint unsigned
+created_at timestamp NULL
+updated_at timestamp NULL
+
+seats
+-----
+id PK bigint
+room_id bigint FK >- rooms.id INDEX
+row_label varchar(5)
+seat_number tinyint unsigned
+created_at timestamp NULL
+updated_at timestamp NULL
+# UNIQUE (room_id, row_label, seat_number)
+
+screenings
+----------
+id PK bigint
+movie_id bigint FK >- movies.id INDEX
+room_id bigint FK >- rooms.id INDEX
+starts_at datetime INDEX
+price decimal(8,2)
+created_at timestamp NULL
+updated_at timestamp NULL
+
+purchases
+---------
+id PK bigint
+user_id bigint FK >- users.id INDEX
+status varchar(20) INDEX
+total_amount decimal(8,2)
+created_at timestamp NULL
+updated_at timestamp NULL
+# status: pending, paid, cancelled
+
+payments
+--------
+id PK bigint
+purchase_id bigint FK >- purchases.id INDEX
+provider_reference varchar(100) UNIQUE
+amount decimal(8,2)
+paid_at timestamp NULL
+created_at timestamp NULL
+updated_at timestamp NULL
+
+tickets
+-------
+id PK bigint
+purchase_id bigint FK >- purchases.id INDEX
+screening_id bigint FK >- screenings.id INDEX
+seat_id bigint FK >- seats.id INDEX
+status varchar(20) INDEX
+price decimal(8,2)
+created_at timestamp NULL
+updated_at timestamp NULL
+# status: active, used
+# UNIQUE (screening_id, seat_id)
