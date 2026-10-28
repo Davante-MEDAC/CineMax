@@ -5,8 +5,8 @@ cd /app
 
 case "${1:-}" in
     app)
-        composer install --no-interaction --prefer-dist
         mkdir -p storage/framework/{cache,sessions,views} storage/logs bootstrap/cache
+        composer install --no-interaction --prefer-dist
 
         echo "Waiting for database at ${DB_HOST}:${DB_PORT}..."
         until mysqladmin ping -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USERNAME" -p"$DB_PASSWORD" --silent 2>/dev/null; do
